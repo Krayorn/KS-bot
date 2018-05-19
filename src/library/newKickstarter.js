@@ -16,7 +16,7 @@ module.exports = {
 
                 return channelRequest.findOne({projectName: name, guild: message.guild})
                     .then((data, err) => {
-                        if (!data || (data.status === 'DECLINED' && message.member.roles.find('name', config.role_king))) {
+                        if (!data || ((data.status === 'DECLINED' || data.status === 'DELETED' ) && message.member.roles.find('name', config.role_king))) {
                             const url = args[0]
 
                             const channel = message.guild.channels.find(channel => channel.name === config.moderator_channel && channel.type === "text")
