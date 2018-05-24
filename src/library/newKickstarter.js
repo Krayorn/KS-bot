@@ -7,7 +7,7 @@ const project = require('../models/project')
 module.exports = {
 
     // Send the request to the moderators
-    RequestChannel: (message, args) => {
+    requestChannel: (message, args) => {
         return new Promise((resolve, reject) => {
 
             if(/www\.kickstarter\.com\/projects\/*\/*/.test(args[0])) {
@@ -69,49 +69,55 @@ module.exports = {
     },
 
     // Validate a request
-    ValidateChannel: (message, args) => {
+    validateChannel: (message, args) => {
         return new Promise((resolve, reject) => {
             return channelRequest.findOne({projectName: args[0], guild: message.guild})
                 .then((data, err) => {
                     if(err) return resolve(err)
 
                     if (!data) {
-                        return resolve('PROJECT_NOT_REQUESTED')
+                        return resolve({res:'PROJECT_NOT_REQUESTED'})
                     }
 
                     if (data.status === 'NEW') {
-
+                        let parent
                         message.guild.createChannel(data.projectName, 'text')
                         .then(channel => {
 
-                            const parent = config[args[1]] || config.default_category
+                            if (args[1] === 'after') {
+                                parent = data.projectName.charAt(0).toLowerCase() <= 'l' ? config.afterAL : config.afterMZ
+                            } else {
+                                parent = config[args[1]] || config.default_category
+                            }
 
-                            return channel.setParent(message.guild.channels.find(channel => channel.name === parent))
+
+                            return channel.setParent(message.guild.channels.find(channel => channel.name.toLowerCase() === parent.toLowerCase()))
                         })
                         .then(channel => {
                             channel.setTopic(data.projectUrl)
                             channel.send(`${data.projectName}, requested by ${data.requestedBy}. \n ${data.projectUrl}`)
                             .then(message => message.pin())
 
-                            project.create({
+                            project.findOneAndUpdate({name: data.projectName, guild: message.guild} ,{
                                 name: data.projectName,
+                                displayName: data.projectName,
                                 url: data.projectUrl,
                                 guild: message.guild,
-                            })
+                            }, {upsert: true})
 
                         })
                         .then(() => {
-                            data.update({status: 'ACCEPTED'}).then(() =>  resolve('REQUEST_VALIDATED'))
+                            data.update({status: 'ACCEPTED'}).then(() =>  resolve({res:'REQUEST_VALIDATED', parent}))
                         })
                     } else {
-                        return resolve('REQUEST_NOT_NEW')
+                        return resolve({res:'REQUEST_NOT_NEW'})
                     }
                 })
         })
     },
 
     // Refute a request
-    RefuteChannel: (message, args) => {
+    refuteChannel: (message, args) => {
         return new Promise((resolve, reject) => {
             return channelRequest.findOne({projectName: args[0], guild: message.guild})
                 .then((data, err) => {
@@ -128,7 +134,39 @@ module.exports = {
                     }
                 })
         })
-    }
+    },
+
+    getHangingRequests: (message, args) => {
+        return new Promise((resolve, reject) => {
+            return channelRequest.find({guild: message.guild, status: 'NEW'})
+                .then((data, err) => {
+                    if(err) return resolve(err)
+
+                    if (!data) {
+                        return resolve('NO_REQUESTS')
+                    }
+
+                    const richMessage = new discord.RichEmbed()
+
+                    richMessage.setTitle('Hanging Requests')
+                    richMessage.setAuthor(message.author.username, message.author.displayAvatarURL)
+                    richMessage.setColor('DARK_ORANGE')
+                    richMessage.setFooter(`You can now validate or refute the creation of a new channel for a project with the two following commands : !validate \`name\` or !refute \`name\``)
+
+                    let unansweredRequests = ''
+
+                    data.forEach(request => {
+                        unansweredRequests += `- ${request.projectName} at ${request.projectUrl} \n`
+                    })
+
+                    richMessage.setDescription(unansweredRequests)
+
+                    message.channel.send(richMessage)
+
+                    return resolve('REQUESTS_DISPLAYED')
+                })
+        })
+    },
 }
 
 

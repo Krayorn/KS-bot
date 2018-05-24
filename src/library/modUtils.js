@@ -12,16 +12,17 @@ module.exports = {
 
             message.guild.channels.forEach(channel => {
                 if(channel.parent && [config.default_category, config.future, config.after].indexOf(channel.parent.name) !== -1 ) {
-                    console.log('channel', channel)
-
-                    const name = channel.name.split('-').join(' ');
+                    const displayName = channel.name.split('-').join(' ');
                     const url = channel.topic ||'not defined'
 
-                    project.create({
-                        name,
+                    project.findOneAndUpdate({name: channel.name, guild: message.guild} ,{
+                        name: channel.name,
+                        displayName,
                         url,
-                        guild: message.guild
-                    })
+                        guild: message.guild,
+                    }, {upsert: true, new: true})
+                    .then(data => null)
+
                 }
             })
         })
@@ -41,11 +42,9 @@ module.exports = {
                         return channelRequest.findOne({projectName: args[0], guild: message.guild})
                         .then((data, err) => {
                             if(data) {
-                                console.log('updated', data)
                                 return channelRequest.findOneAndUpdate({projectName: args[0], guild: message.guild}, {status: 'DELETED', deletedBy: message.author})
                                     .then(() => resolve('CHANNEL_DELETED'))
                             } else {
-                                console.log('created', data)
                                 return channelRequest.create({
                                     projectName: args[0],
                                     guild: message.guild,

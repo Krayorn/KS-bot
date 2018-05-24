@@ -3,6 +3,7 @@ const Schema = mongoose.Schema
 
 const ProjectSchema = new Schema({
     name : { type: String, required: true },
+    displayName: { type: String, required: true },
     url : { type: String, required: false },
     guild : { type: String, required: true },
 })

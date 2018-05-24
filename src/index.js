@@ -6,23 +6,24 @@ const mongoose = require('mongoose')
 const newKickstarter = require('./library/newKickstarter')
 const userProfile = require('./library/userProfile')
 const modUtils = require('./library/modUtils')
+const helpers = require('./library/helpers')
 
 mongoose.Promise = global.Promise
 
 const client = new discord.Client()
 
 client.on('ready', () => {
-    client.user.setActivity('Playing Saber And Blood')
+    client.user.setActivity('Saber And Blood')
     console.log(`Bot started`)
 })
 
 client.on('message', (message) => {
-    if(message.author.bot) return;
+    if(message.author.bot) return
 
-    if(message.content.indexOf(config.prefix) !== 0) return;
+    if(message.content.indexOf(config.prefix) !== 0) return
 
-    const args = message.content.slice(config.prefix.length).trim().split(/ +/g);
-    const command = args.shift().toLowerCase();
+    const args = message.content.slice(config.prefix.length).trim().split(/ +/g)
+    const command = args.shift().toLowerCase()
 
     if (command === 'ping') {
         return message.channel.send('Ping?')
@@ -30,11 +31,11 @@ client.on('message', (message) => {
     }
 
     if (command === 'help') {
-        return message.channel.send(`I can't help you i don't know anything yet`)
+        return helpers.sendRegularHelp(message, args)
     }
 
     if (command === 'request') {
-        return newKickstarter.RequestChannel(message, args)
+        return newKickstarter.requestChannel(message, args)
             .then(response => {
                 switch (response) {
                     case 'REQUEST_SEND':
@@ -61,20 +62,77 @@ client.on('message', (message) => {
 
     if (command === 'backed') {
         return userProfile.addNewBackedProject(message, args)
+            .then(response => {
+                switch (response) {
+                    case 'PROJECT_ADDED':
+                        message.reply(`The game ${args[0]} was successfully added to your profile !`)
+                        break
+                    case 'PROJECT_NOT_FOUND':
+                        message.reply(`The game ${args[0]} was not found into this server database !`)
+                        break
+                    case 'PROJECT_ALREADY_ADDED':
+                        message.reply(`The game ${args[0]} was already in your profile !`)
+                        break
+                }
+            })
+    }
+
+    if (command === 'removebacked') {
+        return userProfile.removeBackedProject(message, args)
+            .then(response => {
+                switch (response) {
+                    case 'PROJECT_REMOVED':
+                        message.reply(`The game ${args[0]} was successfully removed from your profile !`)
+                        break
+                    case 'PROJECT_NOT_FOUND':
+                        message.reply(`The game ${args[0]} was not found into this server database !`)
+                        break
+                    case 'PROJECT_NOT_ON_PROFILE':
+                        message.reply(`The game ${args[0]} was not in your profile !`)
+                        break
+                }
+            })
+    }
+
+    if (command === 'profile') {
+        return userProfile.getUserInfos(message, args)
+            .then(response => {
+                switch (response) {
+                    case 'NO_INFO_USER':
+                        message.reply(`Sorry, this user hasn't filled any informations about him !`)
+                        break
+                    case 'USER_NOT_FOUND_SERVER':
+                        message.reply(`Sorry, couldn't find this user on this server !`)
+                        break
+                }
+            })
+    }
+
+    if (command === 'projectslist') {
+        return userProfile.seeProjects(message, args)
+            .then(response => {
+                switch (response) {
+                    case 'NO_PROJECTS':
+                        message.reply(`Sorry, this server has currently no projects !`)
+                        break
+                    case 'MESSAGE_SEND':
+                        break
+                }
+            })
     }
 
     const modChannel = message.guild.channels.find(channel => channel.name === config.moderator_channel && channel.type === "text")
 
     if (message.channel === modChannel && message.member.roles.find('name', config.role_king)) {
         if (command === 'validate' ) {
-            return newKickstarter.ValidateChannel(message, args)
+            return newKickstarter.validateChannel(message, args)
                 .then(response => {
-                    switch (response) {
+                    switch (response.res) {
                         case 'REQUEST_NOT_NEW':
                             message.reply(`This request isn't new anymore, it already has been rejected or approved.`)
                             break
                         case 'REQUEST_VALIDATED':
-                            message.reply(`Channel ${args[0]} created in ${config.default_category} !`)
+                            message.reply(`Channel ${args[0]} created in ${response.parent} !`)
                             break
                         case 'PROJECT_NOT_REQUESTED':
                             message.reply(`There is currently no request for ${args[0]}.`)
@@ -83,8 +141,21 @@ client.on('message', (message) => {
                 })
         }
 
+        if (command === 'getrequests' ) {
+            return newKickstarter.getHangingRequests(message, args)
+                .then(response => {
+                    switch (response.res) {
+                        case 'REQUESTS_DISPLAYED':
+                            break
+                        case 'NO_REQUESTS':
+                            message.reply(`There is no hanging request in that server !`)
+                            break
+                    }
+                })
+        }
+
         if (command === 'refute') {
-            return newKickstarter.RefuteChannel(message, args)
+            return newKickstarter.refuteChannel(message, args)
                 .then(response => {
                     switch (response) {
                         case 'REQUEST_NOT_NEW':
