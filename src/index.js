@@ -121,6 +121,13 @@ client.on('message', (message) => {
             })
     }
 
+    if (command === 'getprojects') {
+        return modUtils.getProjectsFromChannels(message)
+            .then(response => {
+                console.log('RESPONSE')
+            })
+    }
+
     const modChannel = message.guild.channels.find(channel => channel.name === config.moderator_channel && channel.type === "text")
 
     if (message.channel === modChannel && message.member.roles.find('name', config.role_king)) {
@@ -168,13 +175,6 @@ client.on('message', (message) => {
                             message.reply(`There is currently no request for ${args[0]}.`)
                             break
                     }
-                })
-        }
-
-        if (command === 'getprojects') {
-            return modUtils.getProjectsFromChannels(message)
-                .then(response => {
-                    console.log('RESPONSE')
                 })
         }
 

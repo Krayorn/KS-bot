@@ -100,7 +100,7 @@ module.exports = {
 
                             project.findOneAndUpdate({name: data.projectName, guild: message.guild} ,{
                                 name: data.projectName,
-                                displayName: data.projectName,
+                                displayName: data.projectName.split('-').join(' '),
                                 url: data.projectUrl,
                                 guild: message.guild,
                             }, {upsert: true})

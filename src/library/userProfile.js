@@ -77,9 +77,6 @@ module.exports = {
 
                     user.findOne({user: message.author})
                         .then(data => {
-
-                            console.log('data', data)
-
                             if (!data) {
                                 return resolve('PROJECT_NOT_ON_PROFILE')
                             }

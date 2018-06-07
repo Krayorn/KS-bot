@@ -11,8 +11,8 @@ module.exports = {
         return new Promise((resolve, reject) => {
 
             message.guild.channels.forEach(channel => {
-                if(channel.parent && [config.default_category, config.future, config.after].indexOf(channel.parent.name) !== -1 ) {
-                    const displayName = channel.name.split('-').join(' ');
+                if(channel.parent && [config.default_category, config.future, config.afterAL, config.afterMZ].indexOf(channel.parent.name) !== -1 ) {
+                    const displayName = channel.name.split('-').join(' ')
                     const url = channel.topic ||'not defined'
 
                     project.findOneAndUpdate({name: channel.name, guild: message.guild} ,{
