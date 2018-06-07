@@ -108,25 +108,18 @@ client.on('message', (message) => {
             })
     }
 
-    if (command === 'projectslist') {
-        return userProfile.seeProjects(message, args)
-            .then(response => {
-                switch (response) {
-                    case 'NO_PROJECTS':
-                        message.reply(`Sorry, this server has currently no projects !`)
-                        break
-                    case 'MESSAGE_SEND':
-                        break
-                }
-            })
-    }
-
-    if (command === 'getprojects') {
-        return modUtils.getProjectsFromChannels(message)
-            .then(response => {
-                console.log('RESPONSE')
-            })
-    }
+    // if (command === 'projectslist') {
+    //     return userProfile.seeProjects(message, args)
+    //         .then(response => {
+    //             switch (response) {
+    //                 case 'NO_PROJECTS':
+    //                     message.reply(`Sorry, this server has currently no projects !`)
+    //                     break
+    //                 case 'MESSAGE_SEND':
+    //                     break
+    //             }
+    //         })
+    // }
 
     const modChannel = message.guild.channels.find(channel => channel.name === config.moderator_channel && channel.type === "text")
 
@@ -189,6 +182,13 @@ client.on('message', (message) => {
                             message.reply(`Channel ${args[0]} not found in this server !`)
                             break
                     }
+                })
+        }
+
+        if (command === 'getprojects') {
+            return modUtils.getProjectsFromChannels(message)
+                .then(response => {
+                    console.log('RESPONSE')
                 })
         }
     }
