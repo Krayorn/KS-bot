@@ -77,6 +77,21 @@ client.on('message', (message) => {
             })
     }
 
+    if (command === 'ksprofile') {
+        return userProfile.setOfficialKickStarterLink(message, args)
+            .then(response => {
+                switch (response) {
+                    case 'URL_NOT_VALID_KS':
+                        message.reply('The url you provided was not a valid Kickstarter profile url !')
+                        break
+                    case 'LINK_SET':
+                        message.reply(`The url ${args[0]} will now appears in your profile !`)
+                        break
+                }
+            })
+    }
+
+
     if (command === 'removebacked') {
         return userProfile.removeBackedProject(message, args)
             .then(response => {
@@ -120,6 +135,13 @@ client.on('message', (message) => {
     //             }
     //         })
     // }
+
+    if (command === 'getprojects') {
+        return modUtils.getProjectsFromChannels(message)
+            .then(response => {
+                console.log('RESPONSE')
+            })
+    }
 
     const modChannel = message.guild.channels.find(channel => channel.name === config.moderator_channel && channel.type === "text")
 
@@ -182,13 +204,6 @@ client.on('message', (message) => {
                             message.reply(`Channel ${args[0]} not found in this server !`)
                             break
                     }
-                })
-        }
-
-        if (command === 'getprojects') {
-            return modUtils.getProjectsFromChannels(message)
-                .then(response => {
-                    console.log('RESPONSE')
                 })
         }
     }

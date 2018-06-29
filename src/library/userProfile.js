@@ -97,7 +97,7 @@ module.exports = {
     // Send a message with all the informations from one user
     getUserInfos: (message, args) => {
         return new Promise((resolve, reject) => {
-            const member = message.guild.members.find(member => member.user.username === args[0])
+            const member = message.guild.members.find(member => member.user.username === args[0].replace('-', ' '))
 
             if (!member) {
                 return resolve('USER_NOT_FOUND_SERVER')
@@ -118,11 +118,15 @@ module.exports = {
                     project.find({_id: {$in: data.projectsBacked}})
                     .then(projects => {
                         let formattedProjects = ''
-                        projects.forEach((project, i) => {
+                        projects.sort((a, b) => a.displayName > b.displayName).forEach((project, i) => {
+                            if (i > 20) return null
                             formattedProjects += `- ${project.displayName} \n`
                         })
-
                         richMessage.addField('Backed Projects', formattedProjects === '' ? `This user doesn't have any projects in his profile` : formattedProjects, true)
+
+                    })
+                    .then(() => {
+                        richMessage.addField('KS Profile', `${data.KSprofile}` || 'This user has not filled is KS profile url', true)
 
                         message.channel.send(richMessage)
                     })
@@ -133,7 +137,24 @@ module.exports = {
     // Add the Kickstarter Profile url to the user Profile
     setOfficialKickStarterLink: (message, args) => {
         return new Promise((resolve, reject) => {
-
+            if(/www\.kickstarter\.com\/profile\/*/.test(args[0])) {
+                user.findOne({user: message.author})
+                .then(data => {
+                        if (data) {
+                            data.KSprofile = args[0]
+                            data.save()
+                        } else {
+                            user.create({
+                                user: message.author,
+                                KSprofile: args[0],
+                                projectsBacked: []
+                            })
+                        }
+                    })
+                .then(data => resolve('LINK_SET'))
+            } else {
+                return resolve('URL_NOT_VALID_KS')
+            }
         })
     },
 

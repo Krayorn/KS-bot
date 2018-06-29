@@ -85,7 +85,11 @@ module.exports = {
                         .then(channel => {
 
                             if (args[1] === 'after') {
-                                parent = data.projectName.charAt(0).toLowerCase() <= 'l' ? config.afterAL : config.afterMZ
+                                parent = data.projectName.charAt(0).toLowerCase() <= 'g'
+                                ? config.afterAG
+                                : data.projectName.charAt(0).toLowerCase() <= 'o'
+                                    ? config.afterGO
+                                    : config.afterOZ
                             } else {
                                 parent = config[args[1]] || config.default_category
                             }
