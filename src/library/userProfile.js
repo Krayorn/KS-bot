@@ -97,7 +97,10 @@ module.exports = {
     // Send a message with all the informations from one user
     getUserInfos: (message, args) => {
         return new Promise((resolve, reject) => {
-            const member = message.guild.members.find(member => member.user.username === args[0].replace('-', ' '))
+
+            const member = message.guild.members.find(member => {
+                return member.user.id === args[0].slice(2, - 1).replace('!', '')
+            })
 
             if (!member) {
                 return resolve('USER_NOT_FOUND_SERVER')
@@ -105,7 +108,7 @@ module.exports = {
 
             const richMessage = new discord.RichEmbed()
 
-            user.findOne({user: member})
+            user.findOne({user: args[0].replace('!', '')})
                 .then(data => {
                     if (!data) {
                         return resolve('NO_INFO_USER')
