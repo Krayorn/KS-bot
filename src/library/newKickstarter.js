@@ -146,7 +146,7 @@ module.exports = {
                 .then((data, err) => {
                     if(err) return resolve(err)
 
-                    if (!data) {
+                    if (!data || data.length === 0) {
                         return resolve('NO_REQUESTS')
                     }
 

@@ -30,6 +30,75 @@ client.on('message', (message) => {
         .then(m => m.edit(`Pong! Latency is ${m.createdTimestamp - message.createdTimestamp}ms. API Latency is ${Math.round(client.ping)}ms`))
     }
 
+    const modChannel = message.guild.channels.find(channel => channel.name === config.moderator_channel && channel.type === "text")
+
+    if (message.channel === modChannel && message.member.roles.find('name', config.role_king)) {
+        if (command === 'validate' ) {
+            return newKickstarter.validateChannel(message, args)
+                .then(response => {
+                    switch (response.res) {
+                        case 'REQUEST_NOT_NEW':
+                            message.reply(`This request isn't new anymore, it already has been rejected or approved.`)
+                            break
+                        case 'REQUEST_VALIDATED':
+                            message.reply(`Channel ${args[0]} created in ${response.parent} !`)
+                            break
+                        case 'PROJECT_NOT_REQUESTED':
+                            message.reply(`There is currently no request for ${args[0]}.`)
+                            break
+                    }
+                })
+        }
+
+        if (command === 'getrequests' ) {
+            return newKickstarter.getHangingRequests(message, args)
+                .then(response => {
+                    switch (response) {
+                        case 'REQUESTS_DISPLAYED':
+                            break
+                        case 'NO_REQUESTS':
+                            message.reply(`There is no hanging request in that server !`)
+                            break
+                    }
+                })
+        }
+
+        if (command === 'refute') {
+            return newKickstarter.refuteChannel(message, args)
+                .then(response => {
+                    switch (response) {
+                        case 'REQUEST_NOT_NEW':
+                            message.reply(`This request isn't new anymore, it already has been rejected or approved.`)
+                            break
+                        case 'REQUEST_DECLINED':
+                            message.reply(`The request for the project ${args[0]} has been successfully declined.`)
+                            break
+                        case 'PROJECT_NOT_REQUESTED':
+                            message.reply(`There is currently no request for ${args[0]}.`)
+                            break
+                    }
+                })
+        }
+
+        if (command === 'delete') {
+            return modUtils.deleteChannel(message, args)
+                .then(response => {
+                    switch (response) {
+                        case 'CHANNEL_DELETED':
+                            message.reply(`Channel ${args[0]} successfully deleted !`)
+                            break
+                        case 'CHANNEL_NOT_FOUND':
+                            message.reply(`Channel ${args[0]} not found in this server !`)
+                            break
+                    }
+                })
+        }
+
+        if (command === 'help') {
+            return helpers.sendModeratorHelp(message, args)
+        }
+    }
+
     if (command === 'help') {
         return helpers.sendRegularHelp(message, args)
     }
@@ -91,7 +160,6 @@ client.on('message', (message) => {
             })
     }
 
-
     if (command === 'removebacked') {
         return userProfile.removeBackedProject(message, args)
             .then(response => {
@@ -123,18 +191,9 @@ client.on('message', (message) => {
             })
     }
 
-    // if (command === 'projectslist') {
-    //     return userProfile.seeProjects(message, args)
-    //         .then(response => {
-    //             switch (response) {
-    //                 case 'NO_PROJECTS':
-    //                     message.reply(`Sorry, this server has currently no projects !`)
-    //                     break
-    //                 case 'MESSAGE_SEND':
-    //                     break
-    //             }
-    //         })
-    // }
+    if (command === 'incoming') {
+        return helpers.sendIncomingFeatures(message, args)
+    }
 
     if (command === 'getprojects') {
         return modUtils.getProjectsFromChannels(message)
@@ -142,72 +201,6 @@ client.on('message', (message) => {
                 console.log('RESPONSE')
             })
     }
-
-    const modChannel = message.guild.channels.find(channel => channel.name === config.moderator_channel && channel.type === "text")
-
-    if (message.channel === modChannel && message.member.roles.find('name', config.role_king)) {
-        if (command === 'validate' ) {
-            return newKickstarter.validateChannel(message, args)
-                .then(response => {
-                    switch (response.res) {
-                        case 'REQUEST_NOT_NEW':
-                            message.reply(`This request isn't new anymore, it already has been rejected or approved.`)
-                            break
-                        case 'REQUEST_VALIDATED':
-                            message.reply(`Channel ${args[0]} created in ${response.parent} !`)
-                            break
-                        case 'PROJECT_NOT_REQUESTED':
-                            message.reply(`There is currently no request for ${args[0]}.`)
-                            break
-                    }
-                })
-        }
-
-        if (command === 'getrequests' ) {
-            return newKickstarter.getHangingRequests(message, args)
-                .then(response => {
-                    switch (response.res) {
-                        case 'REQUESTS_DISPLAYED':
-                            break
-                        case 'NO_REQUESTS':
-                            message.reply(`There is no hanging request in that server !`)
-                            break
-                    }
-                })
-        }
-
-        if (command === 'refute') {
-            return newKickstarter.refuteChannel(message, args)
-                .then(response => {
-                    switch (response) {
-                        case 'REQUEST_NOT_NEW':
-                            message.reply(`This request isn't new anymore, it already has been rejected or approved.`)
-                            break
-                        case 'REQUEST_DECLINED':
-                            message.reply(`The request for the project ${args[0]} has been successfully declined.`)
-                            break
-                        case 'PROJECT_NOT_REQUESTED':
-                            message.reply(`There is currently no request for ${args[0]}.`)
-                            break
-                    }
-                })
-        }
-
-        if (command === 'delete') {
-            return modUtils.deleteChannel(message, args)
-                .then(response => {
-                    switch (response) {
-                        case 'CHANNEL_DELETED':
-                            message.reply(`Channel ${args[0]} successfully deleted !`)
-                            break
-                        case 'CHANNEL_NOT_FOUND':
-                            message.reply(`Channel ${args[0]} not found in this server !`)
-                            break
-                    }
-                })
-        }
-    }
-
 })
 
 mongoose.connect('mongodb://localhost/KSbot')
