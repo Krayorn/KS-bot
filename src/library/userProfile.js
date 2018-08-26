@@ -39,7 +39,12 @@ module.exports = {
     // Add a new project to the user Profile
     addNewBackedProject: (message, args) => {
         return new Promise((resolve, reject) => {
-            return project.findOne({name: args[0], guild: message.guild})
+
+            const channel = message.guild.channels.find(channel => {
+                return channel == args[0];
+            })
+
+            return project.findOne({name: (channel || {} ).name || args[0], guild: message.guild})
                 .then(project => {
                     if (!project) {
                         return resolve('PROJECT_NOT_FOUND')
@@ -69,7 +74,12 @@ module.exports = {
     // Remove a project from the user Profile
     removeBackedProject: (message, args) => {
         return new Promise((resolve, reject) => {
-            return project.findOne({name: args[0], guild: message.guild})
+
+            const channel = message.guild.channels.find(channel => {
+                return channel == args[0];
+            })
+
+            return project.findOne({name: (channel || {} ).name || args[0] , guild: message.guild})
                 .then(project => {
                     if (!project) {
                         return resolve('PROJECT_NOT_FOUND')

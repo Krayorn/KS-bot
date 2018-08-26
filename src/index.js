@@ -46,6 +46,12 @@ client.on('message', (message) => {
                         case 'PROJECT_NOT_REQUESTED':
                             message.reply(`There is currently no request for ${args[0]}.`)
                             break
+                        case 'NAME_ALREADY_USED':
+                            message.reply(` The name ${args[2]} is or was already used on this server.`)
+                            break
+                        case 'ARGS_1_NOT_VALID':
+                            message.reply(`You didn't use a valid value for the category. The available values are 'active', 'future', and 'after'`)
+                            break
                     }
                 })
         }

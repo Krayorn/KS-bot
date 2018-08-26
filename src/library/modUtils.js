@@ -11,7 +11,7 @@ module.exports = {
         return new Promise((resolve, reject) => {
 
             message.guild.channels.forEach(channel => {
-                if(channel.parent && [config.default_category, config.future, config.afterAG, config.afterGO, , config.afterOZ].indexOf(channel.parent.name) !== -1 ) {
+                if(channel.parent && [config.default_category, config.future, config.afterAD, config.afterDO, config.afterOZ].indexOf(channel.parent.name) !== -1 ) {
                     const displayName = channel.name.split('-').join(' ')
                     const url = channel.topic ||'not defined'
 

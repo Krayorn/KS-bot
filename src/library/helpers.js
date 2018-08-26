@@ -17,17 +17,21 @@ The moderators will then have the opportunity to validate or refute this request
                 `)
             case 'backed':
                 return message.channel.send(`
-To add a game to your local profile, just type \`!backed\` followed by the name of the channel existing for your game.
+To add a game to your local profile, just type \`!backed\` followed by the channel existing for your game.
 
-For example => \`!backed saber-and-blood\` will add the game "saber&blood" to your local profile.
+For example => \`!backed #saber-and-blood \` will add the game "saber&blood" to your local profile.
+
+You can also use => \`!backed saber-and-blood\`.
 
 You'll then have the possiblity to visualize your local profile using the !profile command.
                 `)
             case 'removebacked':
                 return message.channel.send(`
-To remove a game from your local profile, just type \`!removebacked\` followed by the name of the channel existing for your game.
+To remove a game from your local profile, just type \`!removebacked\` followed by the channel existing for your game.
 
-For example => \`!removebacked overturn-rising-sands\` will remove the game "overturn rising sands" from your local profile.
+For example => \`!removebacked #overturn-rising-sands\` will remove the game "overturn rising sands" from your local profile.
+
+You can also use => \`! removebacked overturn-rising-sands\`.
 
 You'll then have the possiblity to visualize your local profile using the !profile command.
                 `)
@@ -54,9 +58,9 @@ The currently availables commands for the bot are the following :
 
     - \`!request <aValidKickStarterGameUrl>\` will send a request to the moderators from the server for this game.
 
-    - \`!backed <gameName>\` will add the game to your local profile. Please note that only game wich have or had a channel on this server are currently accepted.
+    - \`!backed <gameName or channelName>\` will add the game to your local profile. Please note that only game wich have or had a channel on this server are currently accepted.
 
-    - \`!removebacked <gameName>\` will remove the game from your local profile.
+    - \`!removebacked <gameName or channelName>\` will remove the game from your local profile.
 
     - \`!ksprofile <yourProfileKickStarterUrl>\` will add the link to your KS profile in your local profile.
 
@@ -77,7 +81,7 @@ The currently availables mods commands for the bot are the following :
 
         - \`!getrequests\` will displaythe currently waiting requests.
 
-        - \`!validate <gameName>\` will create a channel for the game requested, put a link to the KS page and pin the link in that channel.
+        - \`!validate <gameName> <optional -> category(active-future-after)> <optional -> channelName> \` will create a channel for the game requested, put a link to the KS page and pin the link in that channel.
 
         - \`!refute <gameName>\` will cancel the request for the game requested. Maybe send a message to the requester explaining why the request couldn't be accepted.
 

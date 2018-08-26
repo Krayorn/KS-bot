@@ -10,15 +10,15 @@ module.exports = {
     requestChannel: (message, args) => {
         return new Promise((resolve, reject) => {
 
-            if(/www\.kickstarter\.com\/projects\/*\/*/.test(args[0])) {
+            const url = args[0].split('?')[0]
 
-                const name = args[0].split('?')[0].split('kickstarter')[1].split('/')[3]
+            if(/www\.kickstarter\.com\/projects\/*\/*/.test(url)) {
+
+                const name = url.split('kickstarter')[1].split('/')[3]
 
                 return channelRequest.findOne({projectName: name, guild: message.guild})
                     .then((data, err) => {
                         if (!data || ((data.status === 'DECLINED' || data.status === 'DELETED' ) && message.member.roles.find('name', config.role_king))) {
-                            const url = args[0]
-
                             const channel = message.guild.channels.find(channel => channel.name === config.moderator_channel && channel.type === "text")
 
                             if (channel) {
@@ -80,39 +80,57 @@ module.exports = {
                     }
 
                     if (data.status === 'NEW') {
-                        let parent
-                        message.guild.createChannel(data.projectName, 'text')
-                        .then(channel => {
+                        let parent, name
 
-                            if (args[1] === 'after') {
-                                parent = data.projectName.charAt(0).toLowerCase() <= 'g'
-                                ? config.afterAG
-                                : data.projectName.charAt(0).toLowerCase() <= 'o'
-                                    ? config.afterGO
-                                    : config.afterOZ
+                        if(args[2]) {
+                            name = args[2]
+                        } else {
+                            name = data.projectName
+                        }
+
+                        const category = args[1] || 'active'
+
+                        if (!['active', 'future', 'after'].includes(category)) {
+                            return resolve({res: 'ARGS_1_NOT_VALID'})
+                        } else {
+
+                            if (category === 'after') {
+                                parent = name.charAt(0).toLowerCase() <= 'g'
+                                ? config.afterAD
+                                : name.charAt(0).toLowerCase() <= 'o'
+                                ? config.afterDO
+                                : config.afterOZ
                             } else {
-                                parent = config[args[1]] || config.default_category
+                                parent = category === 'active' ? config.default_category : config[category]
                             }
 
+                            return project.findOne({name: name, guild: message.guild})
+                            .then((projectData) => {
+                                if (projectData) {
+                                    return resolve({res:'NAME_ALREADY_USED'})
+                                }
 
-                            return channel.setParent(message.guild.channels.find(channel => channel.name.toLowerCase() === parent.toLowerCase()))
-                        })
-                        .then(channel => {
-                            channel.setTopic(data.projectUrl)
-                            channel.send(`${data.projectName}, requested by ${data.requestedBy}. \n ${data.projectUrl}`)
-                            .then(message => message.pin())
+                                return message.guild.createChannel(name, 'text')
+                                    .then(channel => {
+                                        return channel.setParent(message.guild.channels.find(channel => channel.name.toLowerCase() === parent.toLowerCase()))
+                                    })
+                                    .then(channel => {
+                                        channel.setTopic(data.projectUrl)
+                                        channel.send(`${name}, requested by ${data.requestedBy}. \n ${data.projectUrl}`)
+                                        .then(message => message.pin())
 
-                            project.findOneAndUpdate({name: data.projectName, guild: message.guild} ,{
-                                name: data.projectName,
-                                displayName: data.projectName.split('-').join(' '),
-                                url: data.projectUrl,
-                                guild: message.guild,
-                            }, {upsert: true})
-
-                        })
-                        .then(() => {
-                            data.update({status: 'ACCEPTED'}).then(() =>  resolve({res:'REQUEST_VALIDATED', parent}))
-                        })
+                                        project.create({
+                                                name: name,
+                                                displayName: name.split('-').join(' '),
+                                                url: data.projectUrl,
+                                                guild: message.guild,
+                                            })
+                                    })
+                                    .then(() => {
+                                        data.update({status: 'ACCEPTED'}).then(() =>  resolve({res:'REQUEST_VALIDATED', parent}))
+                                    })
+                            })
+                        }
                     } else {
                         return resolve({res:'REQUEST_NOT_NEW'})
                     }
