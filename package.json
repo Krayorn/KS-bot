@@ -1,9 +1,12 @@
 {
   "scripts": {
-    "start": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "start": "forever start -l forever.log -o ./logs/out.log -e ./logs/err.log -a src/index.js",
+    "stop": "forever stopall"
   },
   "dependencies": {
     "discord.js": "^11.3.2",
+    "forever": "^0.15.3",
     "mongoose": "^5.1.0",
     "nodemon": "^1.17.4"
   }

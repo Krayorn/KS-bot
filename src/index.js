@@ -211,4 +211,28 @@ client.on('message', (message) => {
 
 mongoose.connect('mongodb://localhost/KSbot')
     .then(() => console.log(`MongoDB: ready`))
-    .then(() => client.login(config.token))
+    .then(() => {
+
+        checkInternet((isConnected) => {
+            if (isConnected) {
+                return client.login(config.token)
+            }
+
+            return setTimeout(() => {
+                process.exit()
+            }, 20000);
+
+        })
+    })
+
+
+function checkInternet(cb) {
+    require('dns').lookup('google.com',function(err) {
+        if (err && err.code == "ENOTFOUND") {
+            cb(false);
+        } else {
+            cb(true);
+        }
+    })
+}
+
